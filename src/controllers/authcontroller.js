@@ -89,3 +89,39 @@ exports.login = async (req, res) => {
     });
   }
 };
+
+exports.addManager = async (req, res) => {
+  try {
+    const { nom, login, password } = req.body;
+
+    const existingUser = await User.findOne({ login });
+
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: 'Login already exists'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const manager = await User.create({
+      nom,
+      login,
+      password: hashedPassword,
+      role: 'manager'
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Manager created successfully',
+      manager
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Error creating manager'
+    });
+  }
+};
