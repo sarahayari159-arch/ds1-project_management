@@ -5,8 +5,8 @@ app.use(express.json());
 
 
 //const authRoutes = require('./routes/auth');
-//const projectRoutes = require('./routes/projectRoutes');
-//const taskRoutes = require('./routes/taskRoutes');
+//const projectRoutes = require('./routes/projects');
+//const taskRoutes = require('./routes/tasks');
 
 
 /* ndefiniew les 3 routes principales mta3 l'API: auth, projects, tasks
