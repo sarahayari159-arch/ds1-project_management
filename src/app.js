@@ -5,7 +5,7 @@ app.use(express.json());
 
 
 const authRoutes = require('./routes/auth');
-//const projectRoutes = require('./routes/projects');
+const projectRoutes = require('./routes/projects');
 //const taskRoutes = require('./routes/tasks');
 
 
@@ -15,7 +15,7 @@ const authRoutes = require('./routes/auth');
 == tasks lel les operations CRUD + assignments 3al tasks*/ 
 
 app.use('/api/auth', authRoutes);
-//app.use('/api/projects', projectRoutes);
+app.use('/api/projects', projectRoutes);
 //app.use('/api/tasks', taskRoutes);
 
 // 404 handler ken l user 3adda request b route mch mawjouda

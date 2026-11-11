@@ -1,6 +1,5 @@
 const { verifyToken } = require('../utils/generatetoken');
 const { User } = require('../models');
-const { login } = require('../controllers/authcontroller');
 
 // middleware pour verifier si l utilisateur est authentifié
 exports.authenticate = async (req, res, next) => {
