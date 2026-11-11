@@ -4,7 +4,7 @@ const app = express();
 app.use(express.json());
 
 
-//const authRoutes = require('./routes/auth');
+const authRoutes = require('./routes/auth');
 //const projectRoutes = require('./routes/projects');
 //const taskRoutes = require('./routes/tasks');
 
@@ -14,7 +14,7 @@ app.use(express.json());
 == project lel les operations CRUD 3al projects
 == tasks lel les operations CRUD + assignments 3al tasks*/ 
 
-//app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 //app.use('/api/projects', projectRoutes);
 //app.use('/api/tasks', taskRoutes);
 
