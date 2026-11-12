@@ -1,5 +1,6 @@
 const { Task } = require('../models');
 const { Project } = require('../models');
+const User = require('../models/user');
 const mongoose = require('mongoose');
 
 //task creation : ay user authenticated ynajm ycreati task fi projet mte3ou
@@ -214,6 +215,13 @@ exports.assignTask = async (req, res) => {
                 message: 'L\'ID de l\'utilisateur est requis pour assigner la tâche.'
             });
         }
+        // nvalidiw lformat mta3 l user id w task id bech nevitiw 500 error
+        if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID de tâche ou d\'utilisateur invalide.'
+            });
+        }
         const task = await Task.findOne({ _id: id, isDeleted: false });
         if (!task) {
             return res.status(404).json({
@@ -229,7 +237,8 @@ exports.assignTask = async (req, res) => {
                 message: 'Utilisateur non trouvé.'
             });
         }
-        task.utilisateurAssigne = userId;
+        task.utilisateurAssigne = user._id;
+        task.updatedAt = new Date();
         await task.save();
 
         res.status(200).json({
