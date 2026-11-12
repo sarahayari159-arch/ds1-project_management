@@ -21,7 +21,7 @@ exports.addTask = async (req, res) => {
       });
     }
     // bech mayjich user yzid task fi projet mta3 user e5er
-    if (project.proprietaire.toString() !== req.user.id) {
+    if (project.proprietaire.toString() !== req.user.id.toString()) {
         return res.status(403).json({
             success: false,
             message: 'Vous ne pouvez créer une tâche que dans vos propres projets.'
@@ -107,12 +107,16 @@ exports.editTask = async (req, res) => {
   }
 };
 
-
-/*delete task : lezem l user ykoun l owner mta3 lprojet bech yfasa5 task fih
+//task deletion : lezem tkoun l owner mta3 ltask li bech tfas5ou
 exports.deleteTask = async (req, res) => {
     try {
         const { id } = req.params;
-        const task = await Task.findOne({ _id: id, isDeleted: false });
+
+        const task = await Task.findOne({
+            _id: id,
+            isDeleted: false
+        });
+
         if (!task) {
             return res.status(404).json({
                 success: false,
@@ -120,21 +124,39 @@ exports.deleteTask = async (req, res) => {
             });
         }
 
-        // nchoufou ken l user howa l owner mta3 lprojet
-        if (project.proprietaire.toString() !== req.user.id) {
+        const project = await Project.findOne({
+            _id: task.projet,
+            isDeleted: false
+        });
+
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Projet non trouvé.'
+            });
+        }
+
+        if (project.proprietaire.toString() !== req.user.id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: 'Accès refusé. Vous n\'êtes pas le propriétaire du projet.'
             });
         }
-
+        if (task.creator.toString() !== req.user.id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Accès refusé. Vous n’êtes pas le créateur de la tâche.'
+            });
+        }
         task.isDeleted = true;
+        task.updatedAt = Date.now();
         await task.save();
 
         res.status(200).json({
             success: true,
             message: 'Tâche supprimée avec succès.'
         });
+
     } catch (error) {
         console.error('Erreur suppression tâche:', error);
         res.status(500).json({
@@ -142,7 +164,7 @@ exports.deleteTask = async (req, res) => {
             message: 'Erreur serveur lors de la suppression de la tâche.'
         });
     }
-}; */
+};
 
 //get all tasks : ay user ynajm ychouf les tasks mte3ou ama lmanager ynajm ychouf ltasks lkol
 exports.getTasks = async (req, res) => {

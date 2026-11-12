@@ -1,4 +1,4 @@
-const { Project } = require('../models');
+const { Project ,Task } = require('../models');
 
 
 
@@ -42,7 +42,7 @@ exports.editProject = async (req, res) => {
         }
         
         // nchoufou ken l user li y7eb ybadel lproject request houwa l owner
-        if (project.proprietaire.toString() !== req.user.id) {
+        if (project.proprietaire.toString() !== req.user.id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: 'Accès refusé. Vous n\'êtes pas le propriétaire du projet.'
@@ -85,14 +85,20 @@ exports.deleteProject = async (req, res) => {
         }
 
         // nchoufou ken l user howa l owner mta3 lprojet
-        if (project.proprietaire.toString() !== req.user.id) {
+        if (project.proprietaire.toString() !== req.user.id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: 'Accès refusé. Vous n\'êtes pas le propriétaire du projet.'
             });
         }
 
+
         project.isDeleted = true;
+        // delete all tasks associated with the project
+        await Task.updateMany(
+            { projet: id, isDeleted: false },
+            { $set: { isDeleted: true, updatedAt: new Date() } }
+            );
         await project.save();
 
         res.status(200).json({
@@ -129,4 +135,4 @@ exports.getProjects = async (req, res) => {
             message: 'Erreur serveur lors de la récupération des projets.'
         });
     }
-};  
+};
