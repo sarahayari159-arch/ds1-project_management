@@ -4,7 +4,7 @@ const Project = require('../models/project');
 
 module.exports = {
   User,
-  Project
-  // Task
+  Project,
+  Task
 };
 
