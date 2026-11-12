@@ -33,7 +33,7 @@ exports.editProject = async (req, res) => {
         const { id } = req.params;
         const { nom, description, statut } = req.body;
 
-        const project = await Project.findById(id, { isDeleted: false });
+        const project = await Project.findOne({ _id: id, isDeleted: false });
         if (!project) {
             return res.status(404).json({
                 success: false,
@@ -76,7 +76,7 @@ exports.editProject = async (req, res) => {
 exports.deleteProject = async (req, res) => {
     try {
         const { id } = req.params;
-        const project = await Project.findById(id, { isDeleted: false });
+        const project = await Project.findOne({ _id: id, isDeleted: false });
         if (!project) {
             return res.status(404).json({
                 success: false,
