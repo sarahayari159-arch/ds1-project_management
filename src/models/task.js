@@ -35,6 +35,12 @@ const taskSchema = new mongoose.Schema({
     default: null
   },
 
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+
   createdAt: {
     type: Date,
     default: Date.now
@@ -47,6 +53,7 @@ const taskSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   }
+
 });
 
 module.exports = mongoose.model('Task', taskSchema);

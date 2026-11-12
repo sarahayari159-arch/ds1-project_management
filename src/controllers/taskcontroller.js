@@ -1,7 +1,8 @@
 const { Task } = require('../models');
 const { Project } = require('../models');
 
-//task creation : ay user authenticated ynajm ycreati task
+
+//task creation : ay user authenticated ynajm ycreati task fi projet mte3ou
 exports.addTask = async (req, res) => {
   try {
     const { titre, description, statut, deadline, projet } = req.body;
@@ -19,13 +20,20 @@ exports.addTask = async (req, res) => {
         message: 'Projet non trouvé.'
       });
     }
-
+    // bech mayjich user yzid task fi projet mta3 user e5er
+    if (project.proprietaire.toString() !== req.user.id) {
+        return res.status(403).json({
+            success: false,
+            message: 'Vous ne pouvez créer une tâche que dans vos propres projets.'
+        });
+    }
     const task = new Task({
       titre,
       description,
       statut,
       deadline,
-      projet
+      projet,
+      creator: req.user.id
     });
 
     await task.save();
