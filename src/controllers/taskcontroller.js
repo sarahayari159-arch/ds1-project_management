@@ -1,6 +1,6 @@
 const { Task } = require('../models');
 const { Project } = require('../models');
-
+const mongoose = require('mongoose');
 
 //task creation : ay user authenticated ynajm ycreati task fi projet mte3ou
 exports.addTask = async (req, res) => {
@@ -199,6 +199,49 @@ exports.getTasks = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erreur serveur lors de la récupération des tâches.'
+        });
+    }
+};
+// only a manager can assign a task to a user by using requireAdmin middleware
+exports.assignTask = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: 'L\'ID de l\'utilisateur est requis pour assigner la tâche.'
+            });
+        }
+        const task = await Task.findOne({ _id: id, isDeleted: false });
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                message: 'Tâche non trouvée.'
+            });
+        }
+        // nchoufou ken l user mawjoud wale 9bal ma nassigniwou task lih 
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Utilisateur non trouvé.'
+            });
+        }
+        task.utilisateurAssigne = userId;
+        await task.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Tâche assignée avec succès.',
+            task
+        });
+    } catch (error) {
+        console.error('Erreur assignation tâche:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur serveur lors de l\'assignation de la tâche.'
         });
     }
 };
