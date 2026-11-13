@@ -167,13 +167,31 @@ exports.deleteTask = async (req, res) => {
     }
 };
 
+
 //get all tasks : ay user ynajm ychouf les tasks mte3ou ama lmanager ynajm ychouf ltasks lkol
 exports.getTasks = async (req, res) => {
     try {
-        let tasks;
+        const { search, statut, projet, sortBy, order } = req.query;
+
+        let filter = { isDeleted: false };
+
+        // recherche b titre
+        if (search) {
+            filter.titre = { $regex: search, $options: 'i' };
+        }
+
+        // recherche b statut
+        if (statut) {
+            filter.statut = statut;
+        }
+
+        // recherche bel id mta3 lprojet bch y5arj les tasks mte3ou lkol 
+        if (projet) {
+            filter.projet = projet;
+        }
 
         if (req.user.role === 'manager') {
-            tasks = await Task.find({ isDeleted: false });
+        
         /* lena chnretriviw l ids mta3 les projets mta3 l user li 3mal request
         bech nretourniwlou les taches mta3 projeyetou kahaw */
         } else {
@@ -185,13 +203,36 @@ exports.getTasks = async (req, res) => {
             const projectIds = projects.map(project => project._id);
 
             // l user ynajm ychouf tasks mte3ou wli assigned lih zeda
-            tasks = await Task.find({
-                isDeleted: false,
-                $or: [
-                    { projet: { $in: projectIds } },
-                    { utilisateurAssigne: req.user.id }
-                ]
+            filter.$or = [
+                { projet: { $in: projectIds } },
+                { utilisateurAssigne: req.user.id }
+            ];
+        }
+
+        const direction = order === 'asc' ? 1 : -1;
+
+        let tasks;
+
+        if (sortBy === 'statut') {
+            const priority = {
+                todo: 1,
+                doing: 2,
+                done: 3
+            };
+
+            tasks = await Task.find(filter);
+
+            tasks.sort((a, b) => {
+                return (priority[a.statut] - priority[b.statut]) * direction;
             });
+
+        } else {
+            const sortField = ['deadline', 'createdAt'].includes(sortBy)
+                ? sortBy
+                : 'createdAt';
+
+            tasks = await Task.find(filter)
+                .sort({ [sortField]: direction });
         }
 
         res.status(200).json({
@@ -199,6 +240,7 @@ exports.getTasks = async (req, res) => {
             message: 'Tâches récupérées avec succès.',
             tasks
         });
+
     } catch (error) {
         console.error('Erreur récupération tâches:', error);
         res.status(500).json({
@@ -207,6 +249,7 @@ exports.getTasks = async (req, res) => {
         });
     }
 };
+
 // only a manager can assign a task to a user by using requireAdmin middleware
 exports.assignTask = async (req, res) => {
     try {
