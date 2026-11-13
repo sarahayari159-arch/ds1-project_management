@@ -184,9 +184,13 @@ exports.getTasks = async (req, res) => {
 
             const projectIds = projects.map(project => project._id);
 
+            // l user ynajm ychouf tasks mte3ou wli assigned lih zeda
             tasks = await Task.find({
-                projet: { $in: projectIds },
-                isDeleted: false
+                isDeleted: false,
+                $or: [
+                    { projet: { $in: projectIds } },
+                    { utilisateurAssigne: req.user.id }
+                ]
             });
         }
 
