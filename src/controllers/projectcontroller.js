@@ -115,19 +115,67 @@ exports.deleteProject = async (req, res) => {
 };  
 
 //get all projects : ay user ynajm ychouf les projets mte3ou ama lmanager ynajm ychouf lprojects lkol
+/* fel filtering/recherche 5tart deux filtres : nom w statut 7asb amahou lprojet lurgent akthr 
+donc lprojeyet li en cours chyothhrou lwela */
 exports.getProjects = async (req, res) => {
     try {
-        let projects;
-        if (req.user.role === 'manager') {
-            projects = await Project.find({ isDeleted: false });
-        } else {
-            projects = await Project.find({ proprietaire: req.user.id, isDeleted: false });
+        const { search, status, sortBy, order } = req.query;
+
+        let filter = { isDeleted: false };
+
+        // recherche b nom
+        if (search) {
+            filter.nom = { $regex: search, $options: 'i' };
         }
+
+        // recherche b status
+        if (status) {
+            filter.statut = status;
+        }
+
+        // contrainte : lmanager yhchouf lprojects lkol ama luser ychouf ken les projets mte3ou
+        if (req.user.role !== 'manager') {
+            filter.proprietaire = req.user.id;
+        }
+
+        const direction = order === 'desc' ? -1 : 1;
+
+        let projects;
+        
+        // lena nofrthou l order mte3na mta3 lstatus : en cours > en pause > terminé
+        if (sortBy === 'statut') {
+            projects = await Project.aggregate([
+                { $match: filter },
+                {
+                    $addFields: {
+                        statusPriority: {
+                            $switch: {
+                                branches: [
+                                    { case: { $eq: ['$statut', 'en cours'] }, then: 1 },
+                                    { case: { $eq: ['$statut', 'en pause'] }, then: 2 },
+                                    { case: { $eq: ['$statut', 'terminé'] }, then: 3 }
+                                ],
+                                default: 4
+                            }
+                        }
+                    }
+                },
+                { $sort: { statusPriority: direction } },
+                { $project: { statusPriority: 0 } }
+            ]);
+        } else {
+            const sortField = sortBy === 'createdAt' ? 'createdAt' : 'createdAt';
+
+            projects = await Project.find(filter)
+                .sort({ [sortField]: direction });
+        }
+
         res.status(200).json({
             success: true,
             message: 'Projets récupérés avec succès.',
             projects
         });
+
     } catch (error) {
         console.error('Erreur récupération projets:', error);
         res.status(500).json({
